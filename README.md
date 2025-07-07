@@ -72,7 +72,3 @@ GraphQL Playground will be available at http://localhost:8080/
 - All migrations are in the `migrations/` folder.
 
 ---
-
-## Contacts
-- Author: <your name>
-- Email: <your email>
