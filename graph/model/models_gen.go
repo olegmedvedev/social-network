@@ -2,22 +2,23 @@
 
 package model
 
+type Friend struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type FriendRequest struct {
+	ID        string `json:"id"`
+	From      *User  `json:"from"`
+	To        *User  `json:"to"`
+	CreatedAt string `json:"createdAt"`
+}
+
 type Mutation struct {
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
-}
-
 type Query struct {
-}
-
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
 }
 
 type User struct {

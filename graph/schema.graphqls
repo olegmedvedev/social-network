@@ -2,32 +2,34 @@
 #
 # https://gqlgen.com/getting-started/
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
-
 type User {
   id: ID!
   name: String!
   email: String!
 }
 
-type Query {
-  todos: [Todo!]!
-  me: User
-  user(id: ID!): User
+type FriendRequest {
+  id: ID!
+  from: User!
+  to: User!
+  createdAt: String!
 }
 
-input NewTodo {
-  text: String!
-  userId: String!
+type Friend {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+type Query {
+  me: User
+  user(id: ID!): User
+  friends(userId: ID!): [Friend!]!
+  incomingFriendRequests: [FriendRequest!]!
+  outgoingFriendRequests: [FriendRequest!]!
 }
 
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
   register(
     name: String!
     email: String!
@@ -37,5 +39,8 @@ type Mutation {
   login(
     email: String!
     password: String!
-  ): String # JWT или сессионный токен
+  ): String
+
+  sendFriendRequest(toUserId: ID!): FriendRequest!
+  acceptFriendRequest(requestId: ID!): Friend!
 }
