@@ -11,5 +11,16 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  migrate:
+    image: golang:1.23
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app
+    entrypoint: >
+      sh -c "go install github.com/pressly/goose/v3/cmd/goose@latest && goose -dir ./migrations postgres 'host=db port=5432 user=socialuser password=socialpass dbname=socialdb sslmode=disable' up"
+
 volumes:
   pgdata: 
