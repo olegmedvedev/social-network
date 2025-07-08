@@ -7,19 +7,19 @@ package graph
 import (
 	"context"
 	"errors"
+	"strconv"
+
 	"social-network/graph/model"
 	"social-network/internal/auth"
-	"social-network/internal/db"
-	"strconv"
 )
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, name string, email string, password string) (*model.User, error) {
-	_, err := db.GetUserByEmail(ctx, email)
+	_, err := r.Resolver.Repo.GetUserByEmail(ctx, email)
 	if err == nil {
 		return nil, errors.New("user already exists")
 	}
-	user, err := db.CreateUser(ctx, name, email, password)
+	user, err := r.Resolver.Repo.CreateUser(ctx, name, email, password)
 	if err != nil {
 		return nil, err
 	}
@@ -28,11 +28,11 @@ func (r *mutationResolver) Register(ctx context.Context, name string, email stri
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*string, error) {
-	user, err := db.GetUserByEmail(ctx, email)
+	user, err := r.Resolver.Repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
-	err = db.CheckPassword(user.PasswordHash, password)
+	err = r.Resolver.Repo.CheckPassword(user.PasswordHash, password)
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
@@ -68,12 +68,12 @@ func (r *mutationResolver) SendFriendRequest(ctx context.Context, toUserId strin
 	if err != nil {
 		return nil, errors.New("invalid toUserId")
 	}
-	fr, err := db.SendFriendRequest(ctx, fromUserID, toID)
+	fr, err := r.Resolver.Repo.SendFriendRequest(ctx, fromUserID, toID)
 	if err != nil {
 		return nil, err
 	}
-	fromUser, _ := db.GetUserByID(ctx, fr.FromUserID)
-	toUser, _ := db.GetUserByID(ctx, fr.ToUserID)
+	fromUser, _ := r.Resolver.Repo.GetUserByID(ctx, fr.FromUserID)
+	toUser, _ := r.Resolver.Repo.GetUserByID(ctx, fr.ToUserID)
 	return &model.FriendRequest{
 		ID:        strconv.Itoa(fr.ID),
 		From:      &model.User{ID: strconv.Itoa(fromUser.ID), Name: fromUser.Name, Email: fromUser.Email},
@@ -92,7 +92,7 @@ func (r *mutationResolver) AcceptFriendRequest(ctx context.Context, requestId st
 		return nil, errors.New("invalid requestId")
 	}
 	// Check that this user is the recipient
-	frs, err := db.GetIncomingFriendRequests(ctx, userID)
+	frs, err := r.Resolver.Repo.GetIncomingFriendRequests(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -108,27 +108,20 @@ func (r *mutationResolver) AcceptFriendRequest(ctx context.Context, requestId st
 	if !found {
 		return nil, errors.New("friend request not found or not for this user")
 	}
-	if err := db.AcceptFriendRequest(ctx, reqID); err != nil {
+	if err := r.Resolver.Repo.AcceptFriendRequest(ctx, reqID); err != nil {
 		return nil, err
 	}
-	fromUser, _ := db.GetUserByID(ctx, fromUserID)
+	fromUser, _ := r.Resolver.Repo.GetUserByID(ctx, fromUserID)
 	return &model.Friend{ID: strconv.Itoa(fromUser.ID), Name: fromUser.Name, Email: fromUser.Email}, nil
 }
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	token := ""
-	if authHeader := ctx.Value("Authorization"); authHeader != nil {
-		token, _ = authHeader.(string)
-	}
-	if token == "" {
-		return nil, errors.New("no token provided")
-	}
-	userID, err := auth.ParseJWT(token)
+	userID, err := getCurrentUserID(ctx)
 	if err != nil {
-		return nil, errors.New("invalid token")
+		return nil, err
 	}
-	user, err := db.GetUserByID(ctx, userID)
+	user, err := r.Resolver.Repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, errors.New("user not found")
 	}
@@ -141,7 +134,7 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 	if err != nil {
 		return nil, errors.New("invalid id")
 	}
-	user, err := db.GetUserByID(ctx, userID)
+	user, err := r.Resolver.Repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, errors.New("user not found")
 	}
@@ -153,13 +146,13 @@ func (r *queryResolver) Friends(ctx context.Context, userId string) ([]*model.Fr
 	if err != nil {
 		return nil, errors.New("invalid userId")
 	}
-	friendIDs, err := db.GetFriends(ctx, id)
+	friendIDs, err := r.Resolver.Repo.GetFriends(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	var friends []*model.Friend
 	for _, fid := range friendIDs {
-		u, err := db.GetUserByID(ctx, fid)
+		u, err := r.Resolver.Repo.GetUserByID(ctx, fid)
 		if err == nil {
 			friends = append(friends, &model.Friend{ID: strconv.Itoa(u.ID), Name: u.Name, Email: u.Email})
 		}
@@ -172,14 +165,14 @@ func (r *queryResolver) IncomingFriendRequests(ctx context.Context) ([]*model.Fr
 	if err != nil {
 		return nil, err
 	}
-	frs, err := db.GetIncomingFriendRequests(ctx, userID)
+	frs, err := r.Resolver.Repo.GetIncomingFriendRequests(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	var result []*model.FriendRequest
 	for _, fr := range frs {
-		fromUser, _ := db.GetUserByID(ctx, fr.FromUserID)
-		toUser, _ := db.GetUserByID(ctx, fr.ToUserID)
+		fromUser, _ := r.Resolver.Repo.GetUserByID(ctx, fr.FromUserID)
+		toUser, _ := r.Resolver.Repo.GetUserByID(ctx, fr.ToUserID)
 		result = append(result, &model.FriendRequest{
 			ID:        strconv.Itoa(fr.ID),
 			From:      &model.User{ID: strconv.Itoa(fromUser.ID), Name: fromUser.Name, Email: fromUser.Email},
@@ -195,14 +188,14 @@ func (r *queryResolver) OutgoingFriendRequests(ctx context.Context) ([]*model.Fr
 	if err != nil {
 		return nil, err
 	}
-	frs, err := db.GetOutgoingFriendRequests(ctx, userID)
+	frs, err := r.Resolver.Repo.GetOutgoingFriendRequests(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	var result []*model.FriendRequest
 	for _, fr := range frs {
-		fromUser, _ := db.GetUserByID(ctx, fr.FromUserID)
-		toUser, _ := db.GetUserByID(ctx, fr.ToUserID)
+		fromUser, _ := r.Resolver.Repo.GetUserByID(ctx, fr.FromUserID)
+		toUser, _ := r.Resolver.Repo.GetUserByID(ctx, fr.ToUserID)
 		result = append(result, &model.FriendRequest{
 			ID:        strconv.Itoa(fr.ID),
 			From:      &model.User{ID: strconv.Itoa(fromUser.ID), Name: fromUser.Name, Email: fromUser.Email},

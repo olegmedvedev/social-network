@@ -1,7 +1,11 @@
 package graph
 
-// This file will not be regenerated automatically.
-//
-// It serves as dependency injection for your app, add any dependencies you require here.
+import (
+	"social-network/internal/config"
+	"social-network/internal/db"
+)
 
-type Resolver struct{}
+type Resolver struct {
+	Repo *db.SocialRepository
+	Cfg  *config.Config
+}
