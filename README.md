@@ -29,6 +29,7 @@ DB_USER=socialuser
 DB_PASSWORD=socialpass
 DB_NAME=socialdb
 JWT_SECRET=supersecretkey
+HTTP_ADDR=:8080
 ```
 
 ### 3. Start PostgreSQL with Docker
@@ -49,7 +50,7 @@ goose -dir ./migrations postgres "host=localhost port=5432 user=socialuser passw
 go run cmd/gateway/main.go
 ```
 
-GraphQL Playground will be available at http://localhost:8080/
+GraphQL Playground будет доступен по адресу, который вы указали в HTTP_ADDR (например, http://localhost:8080/)
 
 ---
 
