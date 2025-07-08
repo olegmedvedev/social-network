@@ -36,11 +36,11 @@ func main() {
 	} else {
 		srv.Use(extension.Introspection{})
 		srv.AddTransport(transport.POST{})
-		http.Handle("/playground", playground.Handler("GraphQL playground", "/query"))
+		http.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
 		log.Printf("connect to http://%s/playground for GraphQL playground", addr)
 	}
 
-	http.Handle("/query", srv)
+	http.Handle("/graphql", srv)
 
 	server := &http.Server{Addr: addr}
 
