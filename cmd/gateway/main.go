@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/joho/godotenv"
 
@@ -30,14 +32,20 @@ func main() {
 		addr = ":8080"
 	}
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	if os.Getenv("ENV") == "production" {
+	} else {
+		srv.Use(extension.Introspection{})
+		srv.AddTransport(transport.POST{})
+		http.Handle("/playground", playground.Handler("GraphQL playground", "/query"))
+		log.Printf("connect to http://%s/playground for GraphQL playground", addr)
+	}
+
 	http.Handle("/query", srv)
 
 	server := &http.Server{Addr: addr}
 
 	// Start server in a separate goroutine
 	go func() {
-		log.Printf("connect to http://%s/ for GraphQL playground", addr)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("ListenAndServe(): %v", err)
 		}
