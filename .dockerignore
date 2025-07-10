@@ -1,0 +1,10 @@
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+migrations/
+*.md
+*.log
+node_modules
+*.test 
