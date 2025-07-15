@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  namespace: social-network
+spec:
+  template:
+    spec:
+      containers:
+        - name: goose
+          image: ghcr.io/olegmedvedev/social-migrations:latest
+          command: ["goose"]
+          args:
+            - "postgres"
+            - "host=social-postgres.social-network.svc.cluster.local port=5432 user=socialuser password=socialpass dbname=socialdb sslmode=disable"
+            - "up"
+      restartPolicy: OnFailure 

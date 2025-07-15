@@ -1,5 +1,20 @@
 # Kubernetes deployment for social-network
 
+## Dependency installation (PostgreSQL via Helm)
+
+1. Add Bitnami repo and install PostgreSQL:
+   ```sh
+   helm repo add bitnami https://charts.bitnami.com/bitnami
+   helm install social-postgres bitnami/postgresql --namespace social-network --set auth.username=socialuser --set auth.password=socialpass --set auth.database=socialdb
+   ```
+
+2. (Optional) To uninstall PostgreSQL:
+   ```sh
+   helm uninstall social-postgres --namespace social-network
+   ```
+
+---
+
 ## Steps for local launch in Minikube
 
 1. **Create namespace:**

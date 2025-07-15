@@ -22,6 +22,18 @@ spec:
           env:
             - name: PORT
               value: "8080"
+            - name: DB_HOST
+              value: "social-postgres.social-network.svc.cluster.local"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "socialuser"
+            - name: DB_PASSWORD
+              value: "socialpass"
+            - name: DB_NAME
+              value: "socialdb"
+            - name: JWT_SECRET
+              value: "supersecretkey"
           resources:
             requests:
               cpu: "100m"
