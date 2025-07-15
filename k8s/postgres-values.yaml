@@ -1,0 +1,5 @@
+fullnameOverride: social-postgres
+auth:
+  username: socialuser
+  password: socialpass
+  database: socialdb

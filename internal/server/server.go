@@ -43,7 +43,7 @@ func StartServer(cfg *config.Config) {
 
 	addr := os.Getenv("HTTP_ADDR")
 	if addr == "" {
-		addr = ":8080"
+		addr = "0.0.0.0:8080"
 	}
 
 	if os.Getenv("ENV") != "production" {

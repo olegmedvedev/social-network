@@ -12,6 +12,6 @@ spec:
           command: ["goose"]
           args:
             - "postgres"
-            - "host=social-postgres.social-network.svc.cluster.local port=5432 user=socialuser password=socialpass dbname=socialdb sslmode=disable"
+            - "host=social-postgres port=5432 user=socialuser password=socialpass dbname=socialdb sslmode=disable"
             - "up"
       restartPolicy: OnFailure 
