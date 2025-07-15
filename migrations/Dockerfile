@@ -1,3 +1,3 @@
-FROM gomicro/goose:v3.24.0
+FROM pressly/goose:latest
 WORKDIR /migrations
 COPY . /migrations 
