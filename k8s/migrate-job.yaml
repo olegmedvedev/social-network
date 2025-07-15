@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
         - name: goose
-          image: ghcr.io/olegmedvedev/social-migrations:latest
+          image: ghcr.io/olegmedvedev/social-network-migrations:latest
           command: ["goose"]
           args:
             - "postgres"
