@@ -1,33 +1,40 @@
 package config
 
 import (
-    "os"
-    "log"
+	"log"
+	"os"
 )
 
+type DbConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
+}
+
 type Config struct {
-    DBHost     string
-    DBPort     string
-    DBUser     string
-    DBPassword string
-    DBName     string
-    JWTSecret  string
+	DB        DbConfig
+	JWTSecret string
 }
 
 func Load() *Config {
-    cfg := &Config{
-        DBHost:     os.Getenv("DB_HOST"),
-        DBPort:     os.Getenv("DB_PORT"),
-        DBUser:     os.Getenv("DB_USER"),
-        DBPassword: os.Getenv("DB_PASSWORD"),
-        DBName:     os.Getenv("DB_NAME"),
-        JWTSecret:  os.Getenv("JWT_SECRET"),
-    }
-    if cfg.DBHost == "" || cfg.DBUser == "" || cfg.DBPassword == "" || cfg.DBName == "" {
-        log.Fatal("Database environment variables are not set")
-    }
-    if cfg.JWTSecret == "" {
-        log.Fatal("JWT_SECRET is not set")
-    }
-    return cfg
-} 
+	dbCfg := DbConfig{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		Name:     os.Getenv("DB_NAME"),
+	}
+	if dbCfg.Host == "" || dbCfg.User == "" || dbCfg.Password == "" || dbCfg.Name == "" {
+		log.Fatal("Database environment variables are not set")
+	}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET is not set")
+	}
+	return &Config{
+		DB:        dbCfg,
+		JWTSecret: jwtSecret,
+	}
+}

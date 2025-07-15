@@ -27,7 +27,7 @@ import (
 func StartServer(cfg *config.Config) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName,
+		cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name,
 	)
 	dbConn, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -54,6 +54,12 @@ func StartServer(cfg *config.Config) {
 	}
 
 	http.Handle("/graphql", AuthMiddleware(srv))
+
+	// Health check endpoint
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	})
 
 	server := &http.Server{Addr: addr}
 
